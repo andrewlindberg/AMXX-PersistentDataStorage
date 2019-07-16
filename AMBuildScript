@@ -1,0 +1,78 @@
+import os
+
+#
+# Compiler settings
+#
+cxx = builder.DetectCompilers()
+
+cxx.defines += [
+    'HAVE_STDINT_H'
+  ]
+
+if cxx.like('gcc'):
+  cxx.cflags += [
+    '-Wall',
+    '-Werror',
+    '-Wno-error=unused-result',
+    '-Wno-error=unused-variable',
+    '-Wno-unused-value',
+    '-fno-strict-aliasing',
+    '-fPIC',
+    '-m32'
+  ]
+
+  cxx.cxxflags += [
+    '-std=c++11',
+    '-fno-exceptions',
+    '-fno-rtti'
+  ]
+
+  cxx.linkflags += [
+    '-m32'
+  ]
+  cxx.cflags += ['-O2']
+
+elif cxx.like('msvc'):
+  cxx.cflags += [
+    '/W3'
+  ]
+
+  cxx.cxxflags += [
+    '/EHsc'
+  ]
+
+  cxx.linkflags += [
+    '/MACHINE:X86',
+    '/SUBSYSTEM:WINDOWS',
+
+    'kernel32.lib'
+  ]
+
+  cxx.cflags += ['/O1']
+  cxx.linkflags += ['/OPT:ICF', '/OPT:REF']
+  cxx.cflags += ['/MT']
+  cxx.defines += ['NDEBUG']
+  
+cxx.includes += [
+  os.path.join(builder.sourcePath, 'public'),
+  os.path.join(builder.sourcePath, 'public', 'amtl')
+]
+
+
+name = 'PersistentDataStorage_amxx'
+if builder.target_platform == 'linux':
+  name += '_i386'
+
+binary = cxx.Library(name)
+binary.sources += [
+  'source/amxx_api.cpp',
+  'source/natives.cpp',
+
+  'public/amxxsdk/amxxmodule.cpp'
+]
+
+#
+# Run scripts, add binaries
+#
+
+builder.Add(binary)
